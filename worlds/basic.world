@@ -1,0 +1,43 @@
+<?xml version = "1.0"?>
+<sdf version="1.5">
+  <world name="default">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Name it uniquely to not conflict with <include>'d model  -->
+<!-- <population name="roomba_population"> -->
+    <model name="roomba_control">
+		<pose>1 -1 0 0 0 0</pose>
+      <include>
+		<uri>model://create</uri>
+      </include>
+	
+    <!-- plugin -->
+    	<plugin name="differential_drive_controller"     filename="libgazebo_ros_diff_drive.so">
+			<alwaysOn>true</alwaysOn>
+			<updateRate>1000</updateRate>
+			<leftJoint>create::right_wheel</leftJoint>
+			<rightJoint>create::left_wheel</rightJoint>
+
+			<wheelSeparation>0.5380</wheelSeparation>
+			<wheelDiameter>0.2410</wheelDiameter>
+
+			<torque>20</torque>
+			<commandTopic>cmd_vel</commandTopic>
+
+	<!-- topic name published in the cpp file -->
+	<odometryTopic>odom</odometryTopic>
+	<odometryFrame>odom</odometryFrame>
+	<robotBaseFrame>base</robotBaseFrame>
+
+	<publishWheelTF>true</publishWheelTF>
+	<publishWheelJointState>true</publishWheelJointState>
+      </plugin>
+
+    </model>
+  </world>
+</sdf>
