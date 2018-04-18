@@ -15,11 +15,13 @@
 
 #include "kobuki_bumper2pc/kobuki_bumper2pc.hpp"
 
+#include <std_msgs/Int32.h>
 namespace kobuki_bumper2pc
 {
 
 void Bumper2PcNodelet::coreSensorCB(const kobuki_msgs::SensorState::ConstPtr& msg)
 {
+	int flag;
   if (pointcloud_pub_.getNumSubscribers() == 0)
     return;
 
@@ -38,25 +40,25 @@ void Bumper2PcNodelet::coreSensorCB(const kobuki_msgs::SensorState::ConstPtr& ms
     memcpy(&pointcloud_.data[0 * pointcloud_.point_step + pointcloud_.fields[0].offset], &p_side_x_, sizeof(float));
     memcpy(&pointcloud_.data[0 * pointcloud_.point_step + pointcloud_.fields[1].offset], &p_side_y_, sizeof(float));
     /* FLAG GOES HERE*/
-	bool sidecollision=true;
+	flag=1;
   }
   else
   {
     memcpy(&pointcloud_.data[0 * pointcloud_.point_step + pointcloud_.fields[0].offset], &P_INF_X, sizeof(float));
     memcpy(&pointcloud_.data[0 * pointcloud_.point_step + pointcloud_.fields[1].offset], &P_INF_Y, sizeof(float));
-  	bool sidecollison=false;
+  	 flag=0;
   }
 
   if ((msg->bumper & kobuki_msgs::SensorState::BUMPER_CENTRE) ||
       (msg->cliff  & kobuki_msgs::SensorState::CLIFF_CENTRE))
   {
     memcpy(&pointcloud_.data[1 * pointcloud_.point_step + pointcloud_.fields[0].offset], &pc_radius_, sizeof(float));
- 	bool topcollision=true;
+	flag=2;
  }
   else
   {
     memcpy(&pointcloud_.data[1 * pointcloud_.point_step + pointcloud_.fields[0].offset], &P_INF_X, sizeof(float));
-  	bool topcollision=false;
+	flag=0;
   }
 
   if ((msg->bumper & kobuki_msgs::SensorState::BUMPER_RIGHT) ||
@@ -64,17 +66,20 @@ void Bumper2PcNodelet::coreSensorCB(const kobuki_msgs::SensorState::ConstPtr& ms
   {
     memcpy(&pointcloud_.data[2 * pointcloud_.point_step + pointcloud_.fields[0].offset], &p_side_x_, sizeof(float));
     memcpy(&pointcloud_.data[2 * pointcloud_.point_step + pointcloud_.fields[1].offset], &n_side_y_, sizeof(float));
-  	bool sidecollision=true;
+	flag=1;
 	}
   else
   {
     memcpy(&pointcloud_.data[2 * pointcloud_.point_step + pointcloud_.fields[0].offset], &P_INF_X, sizeof(float));
     memcpy(&pointcloud_.data[2 * pointcloud_.point_step + pointcloud_.fields[1].offset], &N_INF_Y, sizeof(float));
-	bool sidecollision=false;  
+	flag=0;  
 }
 
-  pointcloud_.header.stamp = msg->header.stamp;
-  pointcloud_pub_.publish(pointcloud_);
+	pointcloud_.header.stamp = msg->header.stamp;
+	pointcloud_pub_.publish(pointcloud_);
+	std_msgs::Int32 msg2;
+	msg2.data=flag;
+	collide_pub.publish(msg2);  
 }
 
 void Bumper2PcNodelet::onInit()
@@ -135,10 +140,11 @@ void Bumper2PcNodelet::onInit()
   memcpy(&pointcloud_.data[1 * pointcloud_.point_step + pointcloud_.fields[2].offset], &pc_height_, sizeof(float));
   memcpy(&pointcloud_.data[2 * pointcloud_.point_step + pointcloud_.fields[2].offset], &pc_height_, sizeof(float));
 
-  pointcloud_pub_  = nh.advertise <sensor_msgs::PointCloud2> ("pointcloud", 10);
-  core_sensor_sub_ = nh.subscribe("core_sensors", 10, &Bumper2PcNodelet::coreSensorCB, this);
+	pointcloud_pub_  = nh.advertise <sensor_msgs::PointCloud2> ("pointcloud", 10);
+	core_sensor_sub_ = nh.subscribe("core_sensors", 10, &Bumper2PcNodelet::coreSensorCB, this);
 
-  ROS_INFO("Bumper/cliff pointcloud configured at distance %f and height %f from base frame", pc_radius_, pc_height_);
+	ROS_INFO("Bumper/cliff pointcloud configured at distance %f and height %f from base frame", pc_radius_, pc_height_);
+	ros::Publisher collide_pub = nh.advertise<std_msgs::Int32>("Flag",10);
 }
 
 } // namespace kobuki_bumper2pc

@@ -89,7 +89,7 @@ private:
   float p_side_x_;
   float p_side_y_;
   float n_side_y_;
-
+  ros::Publisher  collide_pub;	
   ros::Publisher  pointcloud_pub_;
   ros::Subscriber core_sensor_sub_;
 
