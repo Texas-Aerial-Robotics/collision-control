@@ -78,6 +78,7 @@ void Bumper2PcNodelet::coreSensorCB(const kobuki_msgs::SensorState::ConstPtr& ms
 	pointcloud_.header.stamp = msg->header.stamp;
 	pointcloud_pub_.publish(pointcloud_);
 	std_msgs::Int32 msg2;
+	ROS_INFO("The flag is equal to %d",flag);
 	msg2.data=flag;
 	collide_pub.publish(msg2);  
 }
