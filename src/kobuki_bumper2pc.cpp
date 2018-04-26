@@ -145,7 +145,7 @@ void Bumper2PcNodelet::onInit()
 	core_sensor_sub_ = nh.subscribe("core_sensors", 10, &Bumper2PcNodelet::coreSensorCB, this);
 
 	ROS_INFO("Bumper/cliff pointcloud configured at distance %f and height %f from base frame", pc_radius_, pc_height_);
-	ros::Publisher collide_pub = nh.advertise<std_msgs::Int32>("Flag",10);
+	collide_pub = nh.advertise<std_msgs::Int32>("Flag",10);
 }
 
 } // namespace kobuki_bumper2pc
